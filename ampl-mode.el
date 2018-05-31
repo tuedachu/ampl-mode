@@ -27,6 +27,8 @@
 ;;; Code:
 ;;
 
+(require 'rx)
+
 (defcustom ampl-command "ampl"
   "Path to AMPL executable.")
 
