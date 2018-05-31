@@ -111,9 +111,8 @@ AMPL grammar rules."
   "Indent the current line based on the two previous lines in the
 buffer."
   (interactive)
-  (let ((indentation-level 0)
-        current-line
-        (already-indented nil))
+  (let ((indentation 0)
+        current-line)
     (line-beginning-position)
     (if (bobp)
         (indent-line-to 0)
@@ -161,10 +160,8 @@ applied from `point-min' to `point-max'."
       (indent-line-to 0)
       (end-of-line)
       (let (indentation
-            myindentation
             current-line
-            (remove-indent-after-next-line nil)
-            (already-indented nil))
+            (remove-indent-after-next-line nil))
         (while (not (eobp))
           (setq indentation (current-indentation))
           (when remove-indent-after-next-line
