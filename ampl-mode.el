@@ -128,22 +128,12 @@ buffer."
         (setq indentation (ampl-find-indentation
                            (current-indentation)
                            current-line))
-        (when (and (looking-back (rx (or
-                                      (and "}"
-                                           (0+ space)
-                                           line-end))))
-                   (not (search-backward
-                         "#"
-                         (line-beginning-position)
-                         t)))
-          (setq already-indented t))
         (when (not (bobp))
           (previous-line)
           (when (ampl-remove-indent?)
             (setq indentation
                   (- indentation ampl-indent-width))))
-        (when (and (not already-indented)
-                   (string= current-line "}"))
+        (when (string= current-line "}")
           (setq indentation
                 (- indentation ampl-indent-width))))
       (save-excursion
@@ -169,20 +159,11 @@ applied from `point-min' to `point-max'."
             (setq indentation (- indentation ampl-indent-width)))
           (setq remove-indent-after-next-line nil
                 already-indented nil
-          (when (and (looking-back (rx (or
-                                        (and "}"
-                                             (0+ space)
-                                             line-end))))
-                     (not (search-backward
-                           "#"
-                           (line-beginning-position)
-                           t)))
-            (setq already-indented t))
+                indentation (ampl-find-indentation indentation current-line)
                 remove-indent-after-next-line (ampl-remove-indent?))
           (next-line)
           (setq current-line (car (get-line-as-list)))
-          (when (and (not already-indented)
-                     (string= current-line "}"))
+          (when (string= current-line "}")
             (setq indentation
                   (- indentation ampl-indent-width)))
           (indent-line-to (max 0 indentation))
