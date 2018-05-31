@@ -140,17 +140,7 @@ buffer."
           (setq already-indented t))
         (when (not (bobp))
           (previous-line)
-          (when (and (looking-back (rx (or
-                                        (and ":="
-                                             (0+ space)
-                                             line-end)
-                                        (and ":"
-                                             (0+ space)
-                                             line-end))))
-                     (not (search-backward
-                           "#"
-                           (line-beginning-position)
-                           t)))
+          (when (ampl-remove-indent?)
             (setq indentation
                   (- indentation ampl-indent-width))))
         (when (and (not already-indented)
@@ -181,19 +171,6 @@ applied from `point-min' to `point-max'."
             (setq indentation (- indentation ampl-indent-width)))
           (setq remove-indent-after-next-line nil
                 already-indented nil
-                indentation (ampl-find-indentation indentation current-line))
-          (when (and (looking-back (rx (or
-                                        (and ":="
-                                             (0+ space)
-                                             line-end)
-                                        (and ":"
-                                             (0+ space)
-                                             line-end))))
-                     (not (search-backward
-                           "#"
-                           (line-beginning-position)
-                           t)))
-            (setq remove-indent-after-next-line t))
           (when (and (looking-back (rx (or
                                         (and "}"
                                              (0+ space)
@@ -203,6 +180,7 @@ applied from `point-min' to `point-max'."
                            (line-beginning-position)
                            t)))
             (setq already-indented t))
+                remove-indent-after-next-line (ampl-remove-indent?))
           (next-line)
           (setq current-line (car (get-line-as-list)))
           (when (and (not already-indented)
@@ -211,6 +189,21 @@ applied from `point-min' to `point-max'."
                   (- indentation ampl-indent-width)))
           (indent-line-to (max 0 indentation))
           (end-of-line))))))
+
+(defun ampl-remove-indent? ()
+  (if (and (looking-back (rx (or
+                              (and ":="
+                                   (0+ space)
+                                   line-end)
+                              (and ":"
+                                   (0+ space)
+                                   line-end))))
+           (not (search-backward
+                 "#"
+                 (line-beginning-position)
+                 t)))
+      t
+    nil))
 
 (defun ampl-find-indentation (current-indentation)
   "Find the indentation to apply to the next line based on the
