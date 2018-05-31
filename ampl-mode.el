@@ -146,7 +146,8 @@ buffer."
                    (string= current-line "}"))
           (setq indentation
                 (- indentation ampl-indent-width))))
-      (indent-line-to (max 0 indentation)))))
+      (save-excursion
+        (indent-line-to (max 0 indentation))))))
 
 (defun ampl-indent-buffer ()
   "Indent the entier AMPL buffer.
