@@ -27,4 +27,20 @@
 ;;; Code:
 ;;
 
+(defvar ampl-mode-hooks nil
+  "List of functions being executed after loading `ampl-mode'.")
+
+(defvar ampl-mode-keymap
+  (let ((map (make-keymap)))
+    (define-key map (kbd "<f5>") 'ampl-mode-run-ampl)
+    map)
+  "Keymap for ampl major mode.")
+
+(defvar ampl-mode-syntax-table
+  (let (( st (make-syntax-table)))
+    (modify-syntax-entry ?# "<" st)
+    (modify-syntax-entry ?\n ">" st)
+    (modify-syntax-entry ?' "|" st)
+    st)
+  "Syntax table for ampl mode.")
 ;;; ampl-mode.el ends here
