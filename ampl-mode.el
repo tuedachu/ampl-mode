@@ -43,4 +43,18 @@
     (modify-syntax-entry ?' "|" st)
     st)
   "Syntax table for ampl mode.")
+
+(defun ampl-mode ()
+  "Major mode for editing ampl source code."
+  (interactive)
+  (kill-all-local-variables)
+  (use-local-map ampl-mode-keymap)
+  (set-syntax-table ampl-mode-syntax-table)
+  (setq major-mode 'ampl-mode)
+  (setq mode-name "AMPL")
+  (run-hooks 'ampl-mode-hooks)
+  (message "Opening AMPL mode..."))
+
+(provide 'ampl-mode)
+
 ;;; ampl-mode.el ends here
