@@ -49,6 +49,52 @@
               nil t nil
               filename)
              (buffer-string))))
+
+(defun ampl-create-regexp-main-keyword (keywords)
+  "Create a regexp for a list of keywords KEYWORDS that meets
+AMPL grammar rules."
+  (mapconcat
+   (lambda (keyword)
+     (replace-regexp-in-string "keyword" keyword
+                               (rx (and word-start "keyword"
+                                        word-end
+                                        (or (1+ space)
+                                            line-end
+                                            ";")))))
+   keywords
+   "\\|"))
+
+
+(defconst ampl-mode-keywords-1
+  (list `(,(ampl-create-regexp-main-keyword '("include"
+                                              "data"
+                                              "model"
+                                              "reset"
+                                              "solve"
+                                              "option"
+                                              "display"
+                                              "for"
+                                              "if"
+                                              "repeat[[:space:]]+while"
+                                              "let"
+                                              "fix"
+                                              "param"
+                                              "set"
+                                              "var"
+                                              "integer"
+                                              "binary"
+                                              "dimen"
+                                              "in"
+                                              "maximize"
+                                              "ordered[[:space:]]+by"
+                                              "subject[[:space:]]+to"))
+          . font-lock-keyword-face)
+        `(,(regexp-opt '("hello" "MOLES" "MASS" "SPLIT" "STORE") 'symbols) .  font-lock-type-face)
+        `(,(regexp-opt '("NAME" "Name" "COMP" "Comp") 'symbols) .  font-lock-function-name-face))
+  "First order keywords in ampl- mode")
+
+(defvar ampl-font-lock-keywords ampl-mode-keywords-1)
+
 (defvar ampl-mode-syntax-table
   (let (( st (make-syntax-table)))
     (modify-syntax-entry ?# "<" st)
