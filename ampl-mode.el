@@ -32,6 +32,8 @@
 (defcustom ampl-command "ampl"
   "Path to AMPL executable.")
 
+(defvar ampl-indent-width 4)
+
 (defvar ampl-mode-hooks nil
   "List of functions being executed after loading `ampl-mode'.")
 
@@ -105,17 +107,175 @@ AMPL grammar rules."
     st)
   "Syntax table for ampl mode.")
 
+(defun ampl-indent-line ()
+  "Indent the current line based on the two previous lines in the
+buffer."
+  (interactive)
+  (let ((indentation-level 0)
+        current-line
+        (already-indented nil))
+    (line-beginning-position)
+    (if (bobp)
+        (indent-line-to 0)
+      (save-excursion
+        (setq current-line (car (get-line-as-list)))
+        (previous-line)
+        (line-beginning-position)
+        (while (and (not (bobp))
+                    (not (get-line-as-list)))
+          (previous-line)
+          (line-beginning-position))
+        (end-of-line)
+        (setq indentation (ampl-find-indentation
+                           (current-indentation)
+                           current-line))
+        (when (and (looking-back (rx (or
+                                      (and "}"
+                                           (0+ space)
+                                           line-end))))
+                   (not (search-backward
+                         "#"
+                         (line-beginning-position)
+                         t)))
+          (setq already-indented t))
+        (when (not (bobp))
+          (previous-line)
+          (when (and (looking-back (rx (or
+                                        (and ":="
+                                             (0+ space)
+                                             line-end)
+                                        (and ":"
+                                             (0+ space)
+                                             line-end))))
+                     (not (search-backward
+                           "#"
+                           (line-beginning-position)
+                           t)))
+            (setq indentation
+                  (- indentation ampl-indent-width))))
+        (when (and (not already-indented)
+                   (string= current-line "}"))
+          (setq indentation
+                (- indentation ampl-indent-width))))
+      (indent-line-to (max 0 indentation)))))
+
+(defun ampl-indent-buffer ()
+  "Indent the entier AMPL buffer.
+
+This function is slightly more efficient than `indent-region'
+applied from `point-min' to `point-max'."
+  (interactive)
+  (with-timer "indentation"
+    (save-excursion
+      (goto-char (point-min))
+      (indent-line-to 0)
+      (end-of-line)
+      (let (indentation
+            myindentation
+            current-line
+            (remove-indent-after-next-line nil)
+            (already-indented nil))
+        (while (not (eobp))
+          (setq indentation (current-indentation))
+          (when remove-indent-after-next-line
+            (setq indentation (- indentation ampl-indent-width)))
+          (setq remove-indent-after-next-line nil
+                already-indented nil
+                indentation (ampl-find-indentation indentation current-line))
+          (when (and (looking-back (rx (or
+                                        (and ":="
+                                             (0+ space)
+                                             line-end)
+                                        (and ":"
+                                             (0+ space)
+                                             line-end))))
+                     (not (search-backward
+                           "#"
+                           (line-beginning-position)
+                           t)))
+            (setq remove-indent-after-next-line t))
+          (when (and (looking-back (rx (or
+                                        (and "}"
+                                             (0+ space)
+                                             line-end))))
+                     (not (search-backward
+                           "#"
+                           (line-beginning-position)
+                           t)))
+            (setq already-indented t))
+          (next-line)
+          (setq current-line (car (get-line-as-list)))
+          (when (and (not already-indented)
+                     (string= current-line "}"))
+            (setq indentation
+                  (- indentation ampl-indent-width)))
+          (indent-line-to (max 0 indentation))
+          (end-of-line))))))
+
+(defun ampl-find-indentation (current-indentation current-line)
+  "Find the indentation to apply to the next line based on the
+current line content CURRENT-LINE and the indentation of the
+current line CURRENT-INDENTATION."
+  (let ((indentation current-indentation))
+    (cond ((and (looking-back (rx (or
+                                   (and ":="
+                                        (0+ space)
+                                        line-end)
+                                   (and ":"
+                                        (0+ space)
+                                        line-end)
+                                   (and "{"
+                                        (0+ space)
+                                        line-end))))
+                (not (search-backward
+                      "#"
+                      (line-beginning-position)
+                      t)))
+           (setq indentation
+                 (+ ampl-indent-width indentation)))
+          ((and (looking-back (rx (or
+                                   (and "}"
+                                        (0+ space)
+                                        line-end))))
+                (not (search-backward
+                      "#"
+                      (line-beginning-position)
+                      t)))
+           (setq indentation
+                 (- indentation ampl-indent-width)))
+          )
+    indentation))
+
+
 (defun ampl-mode ()
   "Major mode for editing ampl source code."
   (interactive)
   (kill-all-local-variables)
   (use-local-map ampl-mode-keymap)
+  (set (make-local-variable 'font-lock-defaults) '(ampl-font-lock-keywords))
+  (set (make-local-variable 'indent-line-function) 'ampl-indent-line)
+  ;;  (add-hook 'before-save-hook 'ampl-indent-buffer nil 'local)
   (set-syntax-table ampl-mode-syntax-table)
   (setq major-mode 'ampl-mode)
   (setq mode-name "AMPL")
+  (setq indent-tabs-mode nil)
   (run-hooks 'ampl-mode-hooks)
   (message "Opening AMPL mode..."))
 
 (provide 'ampl-mode)
+
+(defmacro with-timer (title &rest forms)
+  "Run the given FORMS, counting the elapsed time.
+A message including the given TITLE and the corresponding elapsed
+time is displayed."
+  (declare (indent 1))
+  (let ((nowvar (make-symbol "now"))
+        (body   `(progn ,@forms)))
+    `(let ((,nowvar (current-time)))
+       (message "%s..." ,title)
+       (prog1 ,body
+         (let ((elapsed
+                (float-time (time-subtract (current-time) ,nowvar))))
+           (message "%s... done (%.3fs)" ,title elapsed))))))
 
 ;;; ampl-mode.el ends here
