@@ -212,38 +212,26 @@ applied from `point-min' to `point-max'."
           (indent-line-to (max 0 indentation))
           (end-of-line))))))
 
-(defun ampl-find-indentation (current-indentation current-line)
+(defun ampl-find-indentation (current-indentation)
   "Find the indentation to apply to the next line based on the
-current line content CURRENT-LINE and the indentation of the
-current line CURRENT-INDENTATION."
+the indentation of the current line CURRENT-INDENTATION."
   (let ((indentation current-indentation))
-    (cond ((and (looking-back (rx (or
-                                   (and ":="
-                                        (0+ space)
-                                        line-end)
-                                   (and ":"
-                                        (0+ space)
-                                        line-end)
-                                   (and "{"
-                                        (0+ space)
-                                        line-end))))
-                (not (search-backward
-                      "#"
-                      (line-beginning-position)
-                      t)))
-           (setq indentation
-                 (+ ampl-indent-width indentation)))
-          ((and (looking-back (rx (or
-                                   (and "}"
-                                        (0+ space)
-                                        line-end))))
-                (not (search-backward
-                      "#"
-                      (line-beginning-position)
-                      t)))
-           (setq indentation
-                 (- indentation ampl-indent-width)))
-          )
+    (when (and (looking-back (rx (or
+                                  (and ":="
+                                       (0+ space)
+                                       line-end)
+                                  (and ":"
+                                       (0+ space)
+                                       line-end)
+                                  (and "{"
+                                       (0+ space)
+                                       line-end))))
+               (not (search-backward
+                     "#"
+                     (line-beginning-position)
+                     t)))
+      (setq indentation
+            (+ ampl-indent-width indentation)))
     indentation))
 
 
