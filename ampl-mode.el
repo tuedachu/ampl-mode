@@ -27,6 +27,9 @@
 ;;; Code:
 ;;
 
+(defcustom ampl-command "ampl"
+  "Path to AMPL executable.")
+
 (defvar ampl-mode-hooks nil
   "List of functions being executed after loading `ampl-mode'.")
 
@@ -36,6 +39,16 @@
     map)
   "Keymap for ampl major mode.")
 
+(defun ampl-mode-run-ampl ()
+  (interactive)
+  (setq filename (read-from-minibuffer "ampl file:"
+                                       (buffer-file-name)))
+  (message (with-temp-buffer
+             (call-process
+              ampl-command
+              nil t nil
+              filename)
+             (buffer-string))))
 (defvar ampl-mode-syntax-table
   (let (( st (make-syntax-table)))
     (modify-syntax-entry ?# "<" st)
