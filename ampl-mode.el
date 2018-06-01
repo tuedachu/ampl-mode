@@ -186,22 +186,33 @@ applied from `point-min' to `point-max'."
   "Find the indentation to apply to the next line based on the
 the indentation of the current line CURRENT-INDENTATION."
   (let ((indentation current-indentation))
-    (when (and (looking-back (rx (or
-                                  (and ":="
+    (cond ((and (looking-back (rx (or
+                                   (and ":="
+                                        (0+ space)
+                                        line-end)
+                                   (and ":"
+                                        (0+ space)
+                                        line-end)
+                                   (and "{"
+                                        (0+ space)
+                                        line-end))))
+                (not (search-backward
+                      "#"
+                      (line-beginning-position)
+                      t)))
+           (setq indentation
+                 (+ ampl-indent-width indentation)))
+          ((and (looking-back (rx (and "}"
                                        (0+ space)
-                                       line-end)
-                                  (and ":"
-                                       (0+ space)
-                                       line-end)
-                                  (and "{"
-                                       (0+ space)
-                                       line-end))))
-               (not (search-backward
-                     "#"
-                     (line-beginning-position)
-                     t)))
-      (setq indentation
-            (+ ampl-indent-width indentation)))
+                                       line-end)))
+                (not (string= (car (get-line-as-list))
+                              "}"))
+                (not (search-backward
+                      "#"
+                      (line-beginning-position)
+                      t)))
+           (setq indentation
+                 (- indentation ampl-indent-width))))
     indentation))
 
 
