@@ -126,8 +126,7 @@ buffer."
           (line-beginning-position))
         (end-of-line)
         (setq indentation (ampl-find-indentation
-                           (current-indentation)
-                           current-line))
+                           (current-indentation)))
         (when (not (bobp))
           (previous-line)
           (when (ampl-remove-indent?)
@@ -157,9 +156,8 @@ applied from `point-min' to `point-max'."
           (setq indentation (current-indentation))
           (when remove-indent-after-next-line
             (setq indentation (- indentation ampl-indent-width)))
-          (setq remove-indent-after-next-line nil
-                already-indented nil
-                indentation (ampl-find-indentation indentation current-line)
+          (setq already-indented nil
+                indentation (ampl-find-indentation indentation)
                 remove-indent-after-next-line (ampl-remove-indent?))
           (next-line)
           (setq current-line (car (get-line-as-list)))
