@@ -104,6 +104,7 @@ AMPL grammar rules."
     (modify-syntax-entry ?# "<" st)
     (modify-syntax-entry ?\n ">" st)
     (modify-syntax-entry ?' "|" st)
+    (modify-syntax-entry ?_ "w" st) ;; words can contain '_'
     st)
   "Syntax table for ampl mode.")
 
