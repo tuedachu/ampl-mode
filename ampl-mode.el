@@ -101,10 +101,10 @@ AMPL grammar rules."
 
 (defvar ampl-mode-syntax-table
   (let (( st (make-syntax-table)))
-    (modify-syntax-entry ?# "<" st)
-    (modify-syntax-entry ?\n ">" st)
-    (modify-syntax-entry ?' "|" st)
     (modify-syntax-entry ?_ "w" st) ;; words can contain '_'
+    (modify-syntax-entry ?# "<" st) ;; '#' starts a single line comment
+    (modify-syntax-entry ?\n ">" st) ;; '\n' ends a single line comment
+    (modify-syntax-entry ?' "|" st) ;; Single-quoted strings
     st)
   "Syntax table for ampl mode.")
 
