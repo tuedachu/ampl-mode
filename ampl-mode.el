@@ -1,12 +1,12 @@
 ;;; ampl-mode.el --- Emacs major mode for AMPL files. -*- lexical-binding: t -*-
 
-;; Copyright (C) Arnaud Hoffmann <tuedachu@gmail.com>
+;; Copyright (c) Arnaud Hoffmann <tuedachu@gmail.com>
 
 ;; Author: Arnaud Hoffmann  <tuedachu@gmail.com>
 ;; URL: https://github.com/tuedachu/ampl-mode
 ;; Version: 1.0
-;; Package-Requires:
-;; Keywords: ampl
+;; Package-Requires: rx
+;; Keywords: AMPL, major mode
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
