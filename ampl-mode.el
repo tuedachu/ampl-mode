@@ -29,10 +29,20 @@
 
 (require 'rx)
 
-(defcustom ampl-command "ampl"
-  "Path to AMPL executable.")
+(defgroup ampl-mode nil
+  "Interface to ampl-mode."
+  :group 'external)
 
-(defvar ampl-indent-width 4)
+(defcustom ampl-command "ampl"
+  "Path to AMPL executable."
+  :type 'string
+  :group 'ampl-mode)
+
+(defcustom ampl-indent-width 4
+  "Indentation width used in function `ampl-indent-line' and
+`ampl-indent-buffer'."
+  :type 'integer
+  :group 'ampl-mode)
 
 (defvar ampl-mode-hooks nil
   "List of functions being executed after loading `ampl-mode'.")
