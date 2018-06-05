@@ -55,14 +55,70 @@
 
 (defun ampl-mode-run-ampl ()
   (interactive)
+  (require 'ampl-help-mode)
   (setq filename (read-from-minibuffer "ampl file:"
                                        (buffer-file-name)))
-  (message (with-temp-buffer
-             (call-process
-              ampl-command
-              nil t nil
-              filename)
-             (buffer-string))))
+  (let*
+      (exit-code
+       (output-str (with-temp-buffer
+                     (setq exit-code
+                           (call-process
+                            ampl-command
+                            nil t nil
+                            filename))
+                     (buffer-string)))
+       (errors (split-string output-str
+                             "\r\n" ;; It seems that AMPL binary is using '\r\n' (WINDOWS) after each error (?)
+                             t
+                             nil))
+       err-txt)
+    (delete-other-windows)
+    (split-window-right)
+    (with-current-buffer (get-buffer-create "*AMPL output*")
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (insert "AMPL execution:\n\n")
+      (insert
+       (if (= exit-code 0)
+           (propertize "AMPL exited without error.\n\n" 'font-lock-face 'compilation-mode-line-exit)
+         (propertize (concat "AMPL exited with error code "
+                             (int-to-string exit-code)
+                             ".\n\n")
+                     'font-lock-face 'compilation-mode-line-fail)))
+
+      (when (> exit-code 0)
+        (insert (concat (int-to-string (length errors))
+                        " error"
+                        (when (> (length errors) 1) "s")
+                        ":\n"))
+        (dolist (err errors)
+          (setq err-txt (split-string err
+                                      "\n"
+                                      t
+                                      nil))
+          (dolist (line err-txt)
+            (insert (concat "-- " line "\n")))
+          (setq fields (split-string (car err-txt)
+                                     " \\|,"
+                                     t
+                                     nil))
+          (insert "   ==>")
+          (insert-button
+           (concat " In file '" (car fields) "' at line " (nth 2 fields))
+           'action 'ampl-go-to-error
+           'file (car fields)
+           'line (nth 2 fields))
+          (insert "\n        Eror type: ")
+          (insert (mapconcat 'identity
+                             (split-string (nth 1 err-txt)
+                                           " \\|\t"
+                                           t
+                                           nil)
+                             " "))
+          (insert "\n")
+          (insert  (concat "        " (nth 2 err-txt) "\n"))))
+      (switch-to-buffer-other-window "*AMPL output*")
+      (ampl-help-mode))))
 
 (defun ampl-go-to-error (_button)
   (let ((filename (button-get _button 'file))
