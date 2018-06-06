@@ -56,6 +56,12 @@
 (defun ampl-mode-run-ampl ()
   (interactive)
   (require 'ampl-help-mode)
+  (and (buffer-modified-p)
+       (yes-or-no-p (concat "Do you want to save '"
+                            (buffer-file-name)
+                            "'?"))
+       (save-buffer))
+
   (setq filename (read-from-minibuffer "ampl file:"
                                        (buffer-file-name)))
   (let*
