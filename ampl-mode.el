@@ -139,18 +139,12 @@
 
 (defun ampl-go-to-error (_button)
   (let ((filename (button-get _button 'file))
-        (line (string-to-int (button-get _button 'line)))
-        (insert? nil))
+        (line (string-to-int (button-get _button 'line))))
     (message (concat "Going to file " filename
                      " at line " (int-to-string line)))
     (switch-to-buffer-other-window
-     (or (get-file-buffer filename)
-         (and (setq insert? t)
-              (create-file-buffer filename))))
-    (when insert?
-      (insert-file-contents filename))
-    (goto-line line)
-    (switch-to-buffer-other-window "*AMPL output*")))
+     (find-file-noselect filename))
+    (goto-line line)))
 
 (defun ampl-create-regexp-main-keyword (keywords)
   "Create a regexp for a list of keywords KEYWORDS that meets
