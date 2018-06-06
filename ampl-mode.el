@@ -77,7 +77,9 @@
                              "\r\n" ;; It seems that AMPL binary is using '\r\n' (WINDOWS) after each error (?)
                              t
                              nil))
-       err-txt)
+       err-txt
+       (first-err-line 0)
+       (first-field 0))
     (delete-other-windows)
     (split-window-right)
     (with-current-buffer (get-buffer-create "*AMPL output*")
@@ -108,22 +110,31 @@
                                      " \\|,"
                                      t
                                      nil))
-          (insert "   ==>")
+          (when (string= (car fields) "Error")
+            (setq first-err-line 1
+                  first-field 1)
+            (setq fields (split-string (nth first-err-line err-txt)
+                                       " \\|,"
+                                       t
+                                       nil)))
+
+          (insert "   ==> ")
           (insert-button
-           (concat " In file '" (car fields) "' at line " (nth 2 fields))
+           (concat "In file '" (nth first-field fields) "' at line " (nth (+ first-field 2) fields))
            'action 'ampl-go-to-error
-           'file (car fields)
-           'line (nth 2 fields))
+           'file (nth first-field fields)
+           'line (nth (+ first-field 2) fields))
           (insert "\n        Eror type: ")
           (insert (mapconcat 'identity
-                             (split-string (nth 1 err-txt)
+                             (split-string (nth (+ first-err-line 1) err-txt)
                                            " \\|\t"
                                            t
                                            nil)
                              " "))
           (insert "\n")
-          (insert  (concat "        " (nth 2 err-txt) "\n"))))
+          (insert  (concat "        " (nth (+ first-err-line 2) err-txt) "\n"))))
       (switch-to-buffer-other-window "*AMPL output*")
+      (goto-char (point-min))
       (ampl-help-mode))))
 
 (defun ampl-go-to-error (_button)
